@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: single-request
+spec:
+  containers:
+    - name: client
+      image: ingvord/upgraded-octo-lamp-client:latest
+      imagePullPolicy: Always
+      env:
+        - name: URL
+          value: http://server-service/process-image
+      volumeMounts:
+        - mountPath: /app/input.png
+          name: image
+          readOnly: true
+        - mountPath: /app/out
+          name: out
+      securityContext:
+        runAsUser: 1000
+  volumes:
+    - name: image
+      hostPath:
+        path: /home/ingvord/Projects/upgraded-octo-lamp/lenna.jpeg
+        type: File
+    - name: out
+      hostPath:
+        path: /home/ingvord/Projects/upgraded-octo-lamp/out

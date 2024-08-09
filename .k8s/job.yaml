@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: histogram-job
+spec:
+  completions: 1000
+  parallelism: 10
+  template:
+    spec:
+      initContainers:
+        - name: image-generator
+          image: ingvord/upgraded-octo-lamp-client:latest
+          imagePullPolicy: Always
+          command: ["python", "generate.py", "--image=/app/input/random_512x512.png"]
+          volumeMounts:
+            - mountPath: /app/input
+              name: input
+      containers:
+        - name: client
+          image: ingvord/upgraded-octo-lamp-client:latest
+          imagePullPolicy: Always
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: IMAGE
+              value: "/app/input/random_512x512.png"
+            - name: URL
+              value: http://server-service/process-image
+            - name: HISTOGRAM
+              value: "/app/out/$(POD_NAME).png"
+          volumeMounts:
+            - mountPath: /app/out
+              name: out
+            - mountPath: /app/input
+              name: input
+      restartPolicy: Never
+      volumes:
+        - name: out
+          hostPath:
+            path: /home/ingvord/Projects/upgraded-octo-lamp/out
+        - name: input
+          emptyDir: {}

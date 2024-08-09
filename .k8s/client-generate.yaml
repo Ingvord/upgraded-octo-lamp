@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: single-request-generate
+spec:
+  initContainers:
+    - name: image-generator
+      image: ingvord/upgraded-octo-lamp-client:latest
+      imagePullPolicy: Always
+      command: [ "python", "generate.py", "--image=/app/input/random_512x512.png" ]
+      volumeMounts:
+        - mountPath: /app/input
+          name: input
+  containers:
+    - name: client
+      image: ingvord/upgraded-octo-lamp-client:latest
+      imagePullPolicy: Always
+      env:
+       - name: POD_NAME
+         valueFrom:
+           fieldRef:
+             fieldPath: metadata.name
+       - name: IMAGE
+         value: "/app/input/random_512x512.png"
+       - name: URL
+         value: http://server-service/process-image
+       - name: HISTOGRAM
+         value: "/app/out/histogram_$(POD_NAME).png"
+      volumeMounts:
+        - mountPath: /app/input
+          name: input
+          readOnly: true
+        - mountPath: /app/out
+          name: out
+      securityContext:
+        runAsUser: 1000
+  volumes:
+    - name: out
+      hostPath:
+        path: /home/ingvord/Projects/upgraded-octo-lamp/out
+    - name: input
+      emptyDir: { }
