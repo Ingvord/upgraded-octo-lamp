@@ -5,7 +5,7 @@ import io
 
 app = FastAPI()
 
-@app.post("/process-image/")
+@app.post("/process-image")
 async def process_image(file: UploadFile = File(...)):
     print("Processing request...")
     # Read the image file

@@ -3,7 +3,7 @@ kind: Job
 metadata:
   name: histogram-job
 spec:
-  completions: 1000
+  completions: 100
   parallelism: 10
   template:
     spec:
